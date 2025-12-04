@@ -125,7 +125,7 @@ unsigned int compileShaders(char *vertexPath, char *fragmentPath) {
 
     // check for errors
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    printf("Test idea for frag shade");
+    printf("Test idea for frag shade\n");
     if (!success) {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n %s \0", infoLog);
