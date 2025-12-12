@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <cglm/cglm.h>
 #include "shader.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+
 
 const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
@@ -409,6 +411,35 @@ int main(int argc, char *argv[]){
         //float greenValue = sin(timeValue) / 2.0f + 0.5f;
         //int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
         //glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+        // transform for animations
+        vec4 vec;
+        glm_vec4_zero(vec);
+        vec[0] = 1.0f;
+        vec[1] = 0.0f;
+        vec[2] = 0.0f;
+        vec[3] = 1.0f;
+        mat4 trans;
+        glm_mat4_identity(trans);
+        vec3 vec3Trans;
+        glm_vec3_zero(vec3Trans);
+        vec3Trans[0] = 0.5f;
+        vec3Trans[1] = -0.5f;
+        // rotation around unit vector
+        vec3 rotVec;
+        glm_vec3_zero(rotVec);
+        rotVec[2] = 1.0f;
+        glm_translate(trans, vec3Trans);
+        glm_rotate(trans, (float)glfwGetTime(), rotVec);
+        // scale vector
+        vec3 sclVec;
+        glm_vec3_zero(sclVec);
+        sclVec[0] = 0.5f;
+        sclVec[1] = 0.5f;
+        sclVec[2] = 0.5f;
+        glm_scale(trans, sclVec);
+
+        unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);

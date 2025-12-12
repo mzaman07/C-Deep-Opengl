@@ -3,6 +3,7 @@ project(3dCgraphics VERSION 0.1.0 LANGUAGES C)
 cmake_policy(SET CMP0072 NEW)
 add_subdirectory(thirdParty/glfw-3.4)
 add_subdirectory(thirdParty/glad)
+add_subdirectory(thirdParty/cglm)
 
 message(STATUS "COMpiler=${CMAKE_C_COMPILER}")
 
@@ -21,7 +22,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/comp
 
 # message(Var=${GLFW3_LIBRARY})
 # target_link_libraries(3dCgraphics ${GLFW3_LIBRARY})
-target_link_libraries(3dCgraphics PRIVATE glfw glad)
+target_link_libraries(3dCgraphics PRIVATE glfw glad cglm)
 
 
 
