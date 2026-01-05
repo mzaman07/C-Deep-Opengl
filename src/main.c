@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <math.h>
 #include <cglm/cglm.h>
 #include "shader.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -44,6 +45,14 @@ void processInput(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, 1);
     }
+}
+
+float calculateRadians(float degrees) {
+    return degrees * (M_PI / 180);
+}
+
+float calculateDegrees(float radians) {
+    return radians * (180 / M_PI);
 }
 
 void drawTriangle() {
@@ -412,34 +421,66 @@ int main(int argc, char *argv[]){
         //int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
         //glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
         // transform for animations
-        vec4 vec;
-        glm_vec4_zero(vec);
-        vec[0] = 1.0f;
-        vec[1] = 0.0f;
-        vec[2] = 0.0f;
-        vec[3] = 1.0f;
-        mat4 trans;
-        glm_mat4_identity(trans);
-        vec3 vec3Trans;
-        glm_vec3_zero(vec3Trans);
-        vec3Trans[0] = 0.5f;
-        vec3Trans[1] = -0.5f;
-        // rotation around unit vector
-        vec3 rotVec;
-        glm_vec3_zero(rotVec);
-        rotVec[2] = 1.0f;
-        glm_translate(trans, vec3Trans);
-        glm_rotate(trans, (float)glfwGetTime(), rotVec);
-        // scale vector
-        vec3 sclVec;
-        glm_vec3_zero(sclVec);
-        sclVec[0] = 0.5f;
-        sclVec[1] = 0.5f;
-        sclVec[2] = 0.5f;
-        glm_scale(trans, sclVec);
+        //vec4 vec;
+        //glm_vec4_zero(vec);
+        //vec[0] = 1.0f;
+        //vec[1] = 0.0f;
+        //vec[2] = 0.0f;
+        //vec[3] = 1.0f;
+        //mat4 trans;
+        //glm_mat4_identity(trans);
+        //vec3 vec3Trans;
+        //glm_vec3_zero(vec3Trans);
+        //vec3Trans[0] = 0.5f;
+        //vec3Trans[1] = -0.5f;
+        //// rotation around unit vector
+        //vec3 rotVec;
+        //glm_vec3_zero(rotVec);
+        //rotVec[2] = 1.0f;
+        //glm_translate(trans, vec3Trans);
+        //glm_rotate(trans, (float)glfwGetTime(), rotVec);
+        //// scale vector
+        //vec3 sclVec;
+        //glm_vec3_zero(sclVec);
+        //sclVec[0] = 0.5f;
+        //sclVec[1] = 0.5f;
+        //sclVec[2] = 0.5f;
+        //glm_scale(trans, sclVec);
 
-        unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans);
+        // projection stuff
+        mat4 model;
+        glm_mat4_identity(model);
+
+        vec3 rotVec2;
+        glm_vec3_zero(rotVec2);
+        rotVec2[0] = 1.0f;
+
+        glm_rotate(model, calculateRadians(-55.0f), rotVec2);
+
+        mat4 view;
+        glm_mat4_identity(view);
+        // note that we're translating the scene in the reverse direction of where we want to move
+        vec3 vTrans;
+        glm_vec3_zero(vTrans);
+        vTrans[2] = -3.0f;
+
+        glm_translate(view, vTrans);
+        // projection
+        mat4 projection;
+        glm_mat4_identity(projection);
+        glm_perspective(calculateRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f, projection);
+
+
+
+       /* unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans);*/
+        unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model);
+        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+        unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection);
+        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
