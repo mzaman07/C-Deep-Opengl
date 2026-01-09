@@ -361,6 +361,52 @@ int main(int argc, char *argv[]){
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
+    // different cube positions 
+    vec3 cubePosition[10];
+    glm_vec3_zero(cubePosition[0]);
+    cubePosition[0][0] = 0.0f;
+    cubePosition[0][1] = 0.0f;
+    cubePosition[0][2] = 0.0f;
+    glm_vec3_zero(cubePosition[1]);
+    cubePosition[1][0] = 2.0f;
+    cubePosition[1][1] = 5.0f;
+    cubePosition[1][2] = -15.0f;
+    glm_vec3_zero(cubePosition[2]);
+    cubePosition[2][0] = -1.5f;
+    cubePosition[2][1] = -2.2f;
+    cubePosition[2][2] = -2.5f;
+    glm_vec3_zero(cubePosition[3]);
+    cubePosition[3][0] = -3.8f;
+    cubePosition[3][1] = -2.0f;
+    cubePosition[3][2] = -12.3f;
+    glm_vec3_zero(cubePosition[4]);
+    cubePosition[4][0] = 2.4f;
+    cubePosition[4][1] = -0.4f;
+    cubePosition[4][2] = -3.5f;
+    glm_vec3_zero(cubePosition[5]);
+    cubePosition[5][0] = -1.7f;
+    cubePosition[5][1] = 3.0f;
+    cubePosition[5][2] = -7.5f;
+    glm_vec3_zero(cubePosition[6]);
+    cubePosition[6][0] = 1.3f;
+    cubePosition[6][1] = -2.0f;
+    cubePosition[6][2] = -2.5f;
+    glm_vec3_zero(cubePosition[7]);
+    cubePosition[7][0] = 1.5f;
+    cubePosition[7][1] = 2.0f;
+    cubePosition[7][2] = -2.5f;
+    glm_vec3_zero(cubePosition[8]);
+    cubePosition[8][0] = 1.5f;
+    cubePosition[8][1] = 0.2f;
+    cubePosition[8][2] = -1.5f;
+    glm_vec3_zero(cubePosition[9]);
+    cubePosition[9][0] = -1.3f;
+    cubePosition[9][1] = 1.0f;
+    cubePosition[9][2] = -1.5f;
+    printf("position 0,0 %f\n", cubePosition[0][0]);
+    printf("position 1,2 %f\n", cubePosition[1][2]);
+    printf("position 2,1 %f\n", cubePosition[2][1]);
+
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,   // first triangle
         1, 2, 3    // second triangle
@@ -447,6 +493,9 @@ int main(int argc, char *argv[]){
     useShader(shaderProgram);
     setInt(shaderProgram, "texture1", 0);
     setInt(shaderProgram, "texture2", 1);
+
+
+
     
 
 
@@ -506,7 +555,7 @@ int main(int argc, char *argv[]){
         //glm_scale(trans, sclVec);
 
         // projection stuff
-        mat4 model;
+       /* mat4 model;
         glm_mat4_identity(model);
 
         vec3 rotVec2;
@@ -514,7 +563,7 @@ int main(int argc, char *argv[]){
         rotVec2[0] = 0.5f;
         rotVec2[1] = 1.0f;
 
-        glm_rotate(model, timeValue, rotVec2);
+        glm_rotate(model, timeValue, rotVec2);*/
 
         mat4 view;
         glm_mat4_identity(view);
@@ -533,15 +582,28 @@ int main(int argc, char *argv[]){
 
        /* unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans);*/
-        unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model);
+        
         unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
         unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
         
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (unsigned int i = 0; i < 10; i++) {
+            mat4 model;
+            glm_mat4_identity(model);
+            glm_translate(model, cubePosition[i]);
+            vec3 rotVec2;
+            glm_vec3_zero(rotVec2);
+            rotVec2[0] = 0.0f;
+            rotVec2[1] = 0.3f;
+            rotVec2[2] = 0.5f;
+            float angle = 20.0f * i;
+            glm_rotate(model, angle, rotVec2);
+            unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
