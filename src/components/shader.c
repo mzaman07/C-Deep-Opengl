@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string.h>
 #include <stdlib.h>
+#include <cglm/cglm.h>
 
 // generic open file to heap memory pointer
 char* openStringFile(char* pathFile) {
@@ -171,6 +172,10 @@ void setInt(int shaderProgram, char* name, int value) {
 
 void setFloat(int shaderProgram, char* name, float value) {
     glUniform1f(glGetUniformLocation(shaderProgram, name), value);
+}
+
+void setMat4(int shaderProgram, char* name, mat4 value) {
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name), 1, GL_FALSE, value);
 }
 
 void useShader(int shaderProgram) {

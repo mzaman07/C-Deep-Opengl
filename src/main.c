@@ -570,6 +570,7 @@ int main(int argc, char *argv[]){
         // note that we're translating the scene in the reverse direction of where we want to move
         vec3 vTrans;
         glm_vec3_zero(vTrans);
+        //vTrans[1] = -1.5f;
         vTrans[2] = -3.0f;
 
         glm_translate(view, vTrans);
@@ -582,11 +583,12 @@ int main(int argc, char *argv[]){
 
        /* unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans);*/
-        
-        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+        setMat4(shaderProgram, "view", &view[0][0]);
+        setMat4(shaderProgram, "projection", &projection[0][0]);
+        /*unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
         unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);*/
         
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i < 10; i++) {
@@ -599,9 +601,15 @@ int main(int argc, char *argv[]){
             rotVec2[1] = 0.3f;
             rotVec2[2] = 0.5f;
             float angle = 20.0f * i;
-            glm_rotate(model, angle, rotVec2);
-            unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model);
+            if (i == 0) {
+                glm_rotate(model, timeValue, rotVec2);
+            }
+            else {
+                glm_rotate(model, angle, rotVec2);
+            }
+            setMat4(shaderProgram, "model", model);
+            /*unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model);*/
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

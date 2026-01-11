@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <glad/glad.h>
+#include <cglm/cglm.h>
+
 
 char* openStringFile(char* filePath);
 int openAndCompileShader(char* vertexPath, char* fragmentPath);
@@ -9,3 +11,4 @@ void detachShader();
 void setBool(int shaderProgram, char* name, int value);
 void setInt(int shaderProgram, char* name, int value);
 void setFloat(int shaderProgram, char* name, float value);
+void setMat4(int shaderProgram, char* name, mat4 value);
