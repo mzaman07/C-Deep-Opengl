@@ -494,14 +494,14 @@ int main(int argc, char *argv[]){
     setInt(shaderProgram, "texture1", 0);
     setInt(shaderProgram, "texture2", 1);
 
-
-
     
-
-
     //glBindVertexArray(0);
     // use this to see the polygon shape of the rendered triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // projection only needs to be done once
+    mat4 projection;
+    glm_mat4_identity(projection);
+    glm_perspective(calculateRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f, projection);
 
     while (!glfwWindowShouldClose(window)) {
         // Keep running until user closes window
@@ -564,9 +564,27 @@ int main(int argc, char *argv[]){
         rotVec2[1] = 1.0f;
 
         glm_rotate(model, timeValue, rotVec2);*/
-
+        // camera position - relative to z-axis
         mat4 view;
-        glm_mat4_identity(view);
+        vec3 viewEye;
+        vec3 viewCenter;
+        vec3 viewUp;
+
+        // rotate the camera and view projection 
+        const float radius = 10.0f;
+        float camX = sin(timeValue) * radius;
+        float camZ = cos(timeValue) * radius;
+        glm_vec3_zero(viewEye);
+        glm_vec3_zero(viewCenter);
+        glm_vec3_zero(viewUp);
+        viewEye[0] = camX;
+        viewEye[2] = camZ;
+        viewUp[1] = 1.0f;
+
+        glm_lookat(viewEye, viewCenter, viewUp, view);
+
+/*        mat4 view;
+        glm_mat4_identity(view)*/;
         // note that we're translating the scene in the reverse direction of where we want to move
         vec3 vTrans;
         glm_vec3_zero(vTrans);
@@ -574,15 +592,13 @@ int main(int argc, char *argv[]){
         vTrans[2] = -3.0f;
 
         glm_translate(view, vTrans);
-        // projection
-        mat4 projection;
-        glm_mat4_identity(projection);
-        glm_perspective(calculateRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f, projection);
+        
 
 
 
        /* unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans);*/
+        //setMat4(shaderProgram, "model", model);
         setMat4(shaderProgram, "view", &view[0][0]);
         setMat4(shaderProgram, "projection", &projection[0][0]);
         /*unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
