@@ -7,25 +7,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+vec3 cameraPos;
+vec3 cameraFront;
+vec3 cameraUp;
 
-
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"out vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos, 1.0);\n"
-"   ourColor = aColor;\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"    FragColor = vec4(ourColor, 1.0);\n"
-"}\0";
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 static void error_callback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
@@ -45,6 +32,27 @@ void processInput(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, 1);
     }
+    const float cameraSpeed = 2.5f * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        glm_vec3_muladds(cameraFront, cameraSpeed, cameraPos);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        glm_vec3_mulsubs(cameraFront, cameraSpeed, cameraPos);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        vec3 crossResultLeft;
+        glm_vec3_cross(cameraFront, cameraUp, crossResultLeft);
+        glm_vec3_normalize(crossResultLeft);
+        glm_vec3_mulsubs(crossResultLeft, cameraSpeed, cameraPos);
+        //cameraPos += cameraSpeed * cameraFront;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        //cameraPos += cameraSpeed * cameraFront;
+        vec3 crossResultRight;
+        glm_vec3_cross(cameraFront, cameraUp, crossResultRight);
+        glm_vec3_normalize(crossResultRight);
+        glm_vec3_muladds(crossResultRight, cameraSpeed, cameraPos);
+    }
 }
 
 float calculateRadians(float degrees) {
@@ -55,145 +63,16 @@ float calculateDegrees(float radians) {
     return radians * (180 / M_PI);
 }
 
-void drawTriangle() {
-
-    float vertices[] = { 0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        0.0f, 0.5f, 0.0f   // top 
-    };
-
-    unsigned int VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindVertexArray(0);
-
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-}
-
-void drawRectangle() {
-
-    // vertex shader compilation
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // check for errors 
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %s \0", infoLog);
-    }
-
-    // fragment shader compilation
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n %s \0", infoLog);
-    }
-
-    // link both shaders
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
-
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // check for errors
-    glGetShaderiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(shaderProgram, 512, NULL, infoLog);
-        printf("ERROR::SHADER::LINK::SHADER_LINK_FAILED\n %s \0", infoLog);
-    }
-
-    glUseProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    // link vertex attribs
-
-    float vertices[] = {
-     0.5f,  0.5f, 0.0f,  // top right
-     0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left 
-    };
-
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,   // first triangle
-        1, 2, 3    // second triangle
-    };
-
-    // VAO and VBO
-    unsigned int VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0);
-
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-
-
-}
-
-void triangles2() {
-    float vertices[] = {
- 0.5f,  0.5f, 0.0f,  // top right
- 0.5f, -0.5f, 0.0f,  // bottom right
--0.5f, -0.5f, 0.0f,  // bottom left
--0.5f,  0.5f, 0.0f   // top left 
-    };
-
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,   // first triangle
-        1, 2, 3,    // second triangle
-    };
-
-
-}
-
-
 // define pointers in here then use it for functions in the other 
 // to do heap allocation free
 int main(int argc, char *argv[]){
     printf("Hello, from 3dCgraphics!\n");
+    glm_vec3_zero(cameraPos);
+    glm_vec3_zero(cameraFront);
+    glm_vec3_zero(cameraUp);
+    cameraPos[2] = 3.0f;
+    cameraFront[2] = -1.0f;
+    cameraUp[1] = 1.0f;
     // how glfw will handle errors via a provided callback
     // glfwSetErrorCallback(error_callback);
     char* vertexPath = "C:\\Users\\Pigeon_Borb\\Desktop\\learn\\game dev and physics\\cbased\\openglC\\vertex.glsl\0";
@@ -524,6 +403,8 @@ int main(int argc, char *argv[]){
 
 
         float timeValue = glfwGetTime();
+        deltaTime = timeValue - lastFrame;
+        lastFrame = timeValue;
         //float greenValue = sin(timeValue) / 2.0f + 0.5f;
         //int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
         //glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
@@ -566,22 +447,24 @@ int main(int argc, char *argv[]){
         glm_rotate(model, timeValue, rotVec2);*/
         // camera position - relative to z-axis
         mat4 view;
-        vec3 viewEye;
-        vec3 viewCenter;
-        vec3 viewUp;
+        //vec3 viewEye;
+        //vec3 viewCenter;
+        //vec3 viewUp;
 
-        // rotate the camera and view projection 
-        const float radius = 10.0f;
-        float camX = sin(timeValue) * radius;
-        float camZ = cos(timeValue) * radius;
-        glm_vec3_zero(viewEye);
-        glm_vec3_zero(viewCenter);
-        glm_vec3_zero(viewUp);
-        viewEye[0] = camX;
-        viewEye[2] = camZ;
-        viewUp[1] = 1.0f;
+        //// rotate the camera and view projection 
+        //const float radius = 10.0f;
+        //float camX = sin(timeValue) * radius;
+        //float camZ = cos(timeValue) * radius;
+        //glm_vec3_zero(viewEye);
+        //glm_vec3_zero(viewCenter);
+        //glm_vec3_zero(viewUp);
+        //viewEye[0] = camX;
+        //viewEye[2] = camZ;
+        //viewUp[1] = 1.0f;
+        vec3 cameraPosFront;
+        glm_vec3_add(cameraPos, cameraFront, cameraPosFront);
 
-        glm_lookat(viewEye, viewCenter, viewUp, view);
+        glm_lookat(cameraPos, cameraPosFront, cameraUp, view);
 
 /*        mat4 view;
         glm_mat4_identity(view)*/;
