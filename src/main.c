@@ -13,6 +13,12 @@ vec3 cameraUp;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+float lastX = 400.0f;
+float lastY = 300.0f;
+float yaw = -90.0f;
+float pitch = 0.0f;
+float fov = 45.0f;
+int firstMouse = 1;
 
 static void error_callback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
@@ -26,6 +32,58 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     printf("New Height %d and Width %d\n", height, width);
     glViewport(0, 0, width, height);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    printf("lastpos x:%f and y:%f \n", lastX, lastY);
+    printf("current mouse pos x: %f and y: %f\n", xpos, ypos);
+    if (firstMouse == 1) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = 0;
+    }
+   
+    float xoffset = (float)xpos - lastX;
+    float yoffset = lastY - (float)ypos;
+    lastX = (float)xpos;
+    lastY = (float)ypos;
+
+    const float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    printf("offsets changed by sensitivity x:%f and y:%f\n", xoffset, yoffset);
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if (pitch > 89.0f) {
+        pitch = 89.0f;
+    }
+    if (pitch < -89.0f) {
+        pitch = -89.0f;
+    }
+
+    vec3 direction;
+    glm_vec3_zero(direction);
+    direction[0] = cos(yaw) * cos(pitch);
+    direction[1] = sin(pitch);
+    direction[2] = sin(yaw) * cos(pitch);
+    printf("direction mouse test x:%f, y:%f, z:%f \n", direction[0], direction[1], direction[2]);
+    printf("cameraFront mouse test x:%f, y:%f, z:%f \n", cameraFront[0], cameraFront[1], cameraFront[2]);
+    glm_vec3_normalize_to(direction, cameraFront);
+    printf("cameraFront after normalize test x:%f, y:%f, z:%f \n", cameraFront[0], cameraFront[1], cameraFront[2]);
+
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    fov -= (float)yoffset;
+    printf("scroll offset x: %f and y: %f, fov: %f \n", xoffset, yoffset, fov);
+    if (fov < 1.0f) {
+        fov = 1.0f;
+    }
+    if (fov > 45.0f) {
+        fov = 45.0f;
+    }
 }
 
 void processInput(GLFWwindow *window) {
@@ -53,14 +111,21 @@ void processInput(GLFWwindow *window) {
         glm_vec3_normalize(crossResultRight);
         glm_vec3_muladds(crossResultRight, cameraSpeed, cameraPos);
     }
-}
-
-float calculateRadians(float degrees) {
-    return degrees * (M_PI / 180);
-}
-
-float calculateDegrees(float radians) {
-    return radians * (180 / M_PI);
+    // reset everything back to origin position
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        glm_vec3_zero(cameraPos);
+        glm_vec3_zero(cameraFront);
+        glm_vec3_zero(cameraUp);
+        cameraPos[2] = 3.0f;
+        cameraFront[2] = -1.0f;
+        cameraUp[1] = 1.0f;
+        printf("reset cam on cameraFront test x:%f, y:%f, z:%f\n", cameraFront[0], cameraFront[1], cameraFront[2]);
+        printf("reset cam on cameraPos test x:%f, y:%f, z:%f\n", cameraPos[0], cameraPos[1], cameraPos[2]);
+        printf("reset cam on cameraUp test x:%f, y:%f, z:%f\n", cameraUp[0], cameraUp[1], cameraUp[2]);
+        yaw = -90.0f;
+        pitch = 0.0f;
+        fov = 45.0f;
+    }
 }
 
 // define pointers in here then use it for functions in the other 
@@ -100,7 +165,7 @@ int main(int argc, char *argv[]){
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
 
 
-    GLFWwindow* window = glfwCreateWindow(1920, 1080, "Test", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Test", NULL, NULL);
 
     if (!window) {
         printf("Failed to create window");
@@ -109,8 +174,13 @@ int main(int argc, char *argv[]){
     }
 
     // this is needed before you can use OpenGL
-    glfwMakeContextCurrent(window);\
+    glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -377,10 +447,6 @@ int main(int argc, char *argv[]){
     //glBindVertexArray(0);
     // use this to see the polygon shape of the rendered triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    // projection only needs to be done once
-    mat4 projection;
-    glm_mat4_identity(projection);
-    glm_perspective(calculateRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f, projection);
 
     while (!glfwWindowShouldClose(window)) {
         // Keep running until user closes window
@@ -436,6 +502,9 @@ int main(int argc, char *argv[]){
         //glm_scale(trans, sclVec);
 
         // projection stuff
+        mat4 projection;
+        glm_mat4_identity(projection);
+        glm_perspective(fov, 800.0f / 600.0f, 0.1f, 100.0f, projection);
        /* mat4 model;
         glm_mat4_identity(model);
 
@@ -496,7 +565,7 @@ int main(int argc, char *argv[]){
             glm_translate(model, cubePosition[i]);
             vec3 rotVec2;
             glm_vec3_zero(rotVec2);
-            rotVec2[0] = 0.0f;
+            rotVec2[0] = 1.0f;
             rotVec2[1] = 0.3f;
             rotVec2[2] = 0.5f;
             float angle = 20.0f * i;
