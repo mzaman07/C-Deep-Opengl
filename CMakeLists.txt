@@ -16,7 +16,7 @@ message(MOD=${CMAKE_SOURCE_DIR}/src/components)
 # find_package(OpenGL REQUIRED)
 # target_link_directories(3dCgraphics PUBLIC ${CMAKE_SOURCE_DIR}/libs/lib-vc2022/)
 
-add_executable(3dCgraphics src/main.c src/components/shader.c)
+add_executable(3dCgraphics "src/lighting/lightmain.c" src/components/shader.c)
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/components")
 

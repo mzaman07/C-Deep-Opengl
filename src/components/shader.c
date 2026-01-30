@@ -174,6 +174,10 @@ void setFloat(int shaderProgram, char* name, float value) {
     glUniform1f(glGetUniformLocation(shaderProgram, name), value);
 }
 
+void setVec3(int shaderProgram, char* name, float x, float y, float z) {
+    glUniform3f(glGetUniformLocation(shaderProgram, name), x, y, z);
+}
+
 void setMat4(int shaderProgram, char* name, mat4 value) {
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name), 1, GL_FALSE, value);
 }
