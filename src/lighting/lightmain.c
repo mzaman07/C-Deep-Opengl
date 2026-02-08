@@ -201,9 +201,9 @@ int main(int argc, char* argv[]) {
     glEnable(GL_DEPTH_TEST);
 
     unsigned int shaderProgram = compileShaders(vertexPath, fragmentPath);
-    unsigned int colorProgram = compileShaders(cVertexPath, cFragmentPath);
+    unsigned int lightProgram = compileShaders(cVertexPath, cFragmentPath);
     // vertex shader compilation
-    printf("shaderProgram %u \n colorProgram %u \n", shaderProgram, colorProgram);
+    printf("shaderProgram %u \n lightProgram %u \n", shaderProgram, lightProgram);
 
     // 3D box vertices
     float vertices[] = {
@@ -303,6 +303,7 @@ int main(int argc, char* argv[]) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
         useShader(shaderProgram);
         setVec3(shaderProgram, "objectColor", 1.0f, 0.5f, 0.31f);
         setVec3(shaderProgram, "lightColor", 1.0f, 1.0f, 1.0f);
@@ -362,9 +363,12 @@ int main(int argc, char* argv[]) {
         //}
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // world transform
-        useShader(colorProgram);
-        setMat4(colorProgram, "projection", projection);
-        setMat4(colorProgram, "view", view);
+        useShader(lightProgram);
+        // update light positions
+        lightPos[0] = 2.0f * sin(timeValue);
+        lightPos[2] = 1.5f * cos(timeValue);
+        setMat4(lightProgram, "projection", projection);
+        setMat4(lightProgram, "view", view);
         glm_mat4_identity(model);
         glm_translate(model, lightPos);
         // shrink cube by every side
@@ -374,7 +378,7 @@ int main(int argc, char* argv[]) {
         shrinkScale[1] = 0.2f;
         shrinkScale[2] = 0.2f;
         glm_scale(model, shrinkScale);
-        setMat4(colorProgram, "model", model);
+        setMat4(lightProgram, "model", model);
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -392,7 +396,7 @@ int main(int argc, char* argv[]) {
     glDeleteBuffers(1, &VBO);
     //glDeleteBuffers(1, &EBO);
     glDeleteProgram(shaderProgram);
-    glDeleteProgram(colorProgram);
+    glDeleteProgram(lightProgram);
 
 
     glfwDestroyWindow(window);
