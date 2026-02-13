@@ -307,15 +307,22 @@ int main(int argc, char* argv[]) {
         useShader(shaderProgram);
         setVec3(shaderProgram, "objectColor", 1.0f, 0.5f, 0.31f);
         setVec3(shaderProgram, "lightColor", 1.0f, 1.0f, 1.0f);
-        setVec3(shaderProgram, "lightPos", lightPos[0], lightPos[1], lightPos[2]);
+        setVec3(shaderProgram, "light.position", lightPos[0], lightPos[1], lightPos[2]);
         // usually this calc is done in view space as opposed to world space because 
         // the calc is simpler because the viewer position is always at (0,0,0)
         setVec3(shaderProgram, "viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
+        // light setup
+        setVec3(shaderProgram, "light.ambient", 0.2f, 0.2f, 0.2f);
+        setVec3(shaderProgram, "light.diffuse", 0.5f, 0.5f, 0.5f);
+        setVec3(shaderProgram, "light.specular", 1.0f, 1.0f, 1.0f);
         // set material
         setVec3(shaderProgram, "material.ambient", 1.0f, 0.5f, 0.31f);
         setVec3(shaderProgram, "material.diffuse", 1.0f, 0.5f, 0.31f);
         setVec3(shaderProgram, "material.specular", 0.5f, 0.5f, 0.5f);
         setFloat(shaderProgram, "material.shininess", 32.0f);
+
+        
+
         // projection stuff
         mat4 projection;
         glm_mat4_identity(projection);

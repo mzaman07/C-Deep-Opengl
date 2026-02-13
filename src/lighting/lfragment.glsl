@@ -10,7 +10,15 @@ struct Material {
 	float shininess;
 };
 
+// do the same thing for light
+struct Light {
+	vec3 position;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
 uniform Material material;
+uniform Light light;
 
 // normal for light reflection off surface perpindicular - light diffusion
 in vec3 Normal;
@@ -19,7 +27,6 @@ in vec3 FragPos;
 
 uniform vec3 objectColor;
 uniform vec3 lightColor;
-uniform vec3 lightPos;
 uniform vec3 viewPos;
 
 // we will not do any inversing matrices is a costly operation for shaders
@@ -34,22 +41,22 @@ uniform vec3 viewPos;
 // The Phong shading gave much smoother results.
 
 void main() {
-	vec3 ambient = material.ambient * lightColor;
+	vec3 ambient = material.ambient * light.ambient;
 	// diffusion light
 	// Need normalized vectors that keep direction to calc
 	vec3 norm = normalize(Normal);
-	vec3 lightDir = normalize(lightPos - FragPos);
+	vec3 lightDir = normalize(light.position - FragPos);
 
 
 	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = lightColor * (diff * material.diffuse);
+	vec3 diffuse = light.diffuse * (diff * material.diffuse);
 
 	// specular stuff
 	vec3 viewDir = normalize(viewPos - FragPos);
 	vec3 reflectDir = reflect(-lightDir, norm);
 	// 32 is the shininess value of the highlight
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-	vec3 specular = lightColor * (spec * material.specular);
+	vec3 specular = light.specular * (spec * material.specular);
 
 	vec3 result = ambient + diffuse + specular;
 	FragColor = vec4(result, 1.0);
