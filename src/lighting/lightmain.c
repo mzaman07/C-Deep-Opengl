@@ -305,15 +305,36 @@ int main(int argc, char* argv[]) {
 
 
         useShader(shaderProgram);
+        // define color dynamic color params;
+        vec3 lightColor;
+        glm_vec3_zero(lightColor);
+        lightColor[0] = sin(timeValue * 2.0f);
+        lightColor[1] = sin(timeValue * 0.7f);
+        lightColor[2] = sin(timeValue * 1.3f);
+
+        vec3 diffuseColorParam;
+        glm_vec3_one(diffuseColorParam);
+        glm_vec3_scale(diffuseColorParam, 0.5f, diffuseColorParam);
+
+        vec3 ambientColorParam;
+        glm_vec3_one(ambientColorParam);
+        glm_vec3_scale(ambientColorParam, 0.2f, ambientColorParam);
+
+        vec3 diffuseColor;
+        glm_vec3_mul(lightColor, diffuseColorParam, diffuseColor);
+
+        vec3 ambientColor;
+        glm_vec3_mul(diffuseColor, ambientColorParam, ambientColor);
+
         setVec3(shaderProgram, "objectColor", 1.0f, 0.5f, 0.31f);
-        setVec3(shaderProgram, "lightColor", 1.0f, 1.0f, 1.0f);
+        setVec3(shaderProgram, "lightColor", lightColor[0], lightColor[1], lightColor[2]);
         setVec3(shaderProgram, "light.position", lightPos[0], lightPos[1], lightPos[2]);
         // usually this calc is done in view space as opposed to world space because 
         // the calc is simpler because the viewer position is always at (0,0,0)
         setVec3(shaderProgram, "viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
         // light setup
-        setVec3(shaderProgram, "light.ambient", 0.2f, 0.2f, 0.2f);
-        setVec3(shaderProgram, "light.diffuse", 0.5f, 0.5f, 0.5f);
+        setVec3(shaderProgram, "light.ambient", ambientColor[0], ambientColor[1], ambientColor[2]);
+        setVec3(shaderProgram, "light.diffuse", diffuseColor[0], diffuseColor[1], diffuseColor[2]);
         setVec3(shaderProgram, "light.specular", 1.0f, 1.0f, 1.0f);
         // set material
         setVec3(shaderProgram, "material.ambient", 1.0f, 0.5f, 0.31f);
