@@ -5,7 +5,9 @@ out vec4 FragColor;
 // some reflect more, others scatter. We can simulate different types of objects.
 struct Material {
 	vec3 ambient;
-	vec3 diffuse;
+	// sampler2D - is opaque type which means we can't instantiate these types but only
+	// define in uniforms
+	sampler2D diffuse;
 	vec3 specular;
 	float shininess;
 };
@@ -24,6 +26,8 @@ uniform Light light;
 in vec3 Normal;
 // use this position for lighting calculations
 in vec3 FragPos;
+// texture coords from shader
+in vec2 TexCoords;
 
 uniform vec3 objectColor;
 uniform vec3 lightColor;
@@ -41,7 +45,7 @@ uniform vec3 viewPos;
 // The Phong shading gave much smoother results.
 
 void main() {
-	vec3 ambient = material.ambient * light.ambient;
+	vec3 ambient = material.ambient * light.ambient * vec3(texture(material.diffuse, TexCoords));
 	// diffusion light
 	// Need normalized vectors that keep direction to calc
 	vec3 norm = normalize(Normal);
@@ -49,7 +53,7 @@ void main() {
 
 
 	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = light.diffuse * (diff * material.diffuse);
+	vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
 
 	// specular stuff
 	vec3 viewDir = normalize(viewPos - FragPos);
