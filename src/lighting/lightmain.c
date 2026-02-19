@@ -129,6 +129,47 @@ void processInput(GLFWwindow* window) {
         fov = 45.0f;
     }
 }
+// load texture
+unsigned int loadTexture(char* path) {
+    unsigned int texture1;
+    glGenTextures(1, &texture1);
+    int width, height, nrChannels;
+    //unsigned char* data = stbi_load("C:\\Users\\Pigeon_Borb\\Desktop\\learn\\game dev and physics\\cbased\\openglC\\src\\container2.png", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
+
+    if (data) {
+        // file open success
+        // check the color channel format
+        // default
+        GLenum format = GL_RGB;
+        if (nrChannels == 1) {
+            format = GL_RED;
+        }
+        else if (nrChannels == 3) {
+            format = GL_RGB;
+        }
+        else if (nrChannels == 4) {
+            format = GL_RGBA;
+        }
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+    }
+    else {
+        printf("Failed to load texture\n");
+    }
+    stbi_image_free(data);
+
+    return texture1;
+}
+
 
 // define pointers in here then use it for functions in the other 
 // to do heap allocation free
@@ -286,49 +327,14 @@ int main(int argc, char* argv[]) {
     glEnableVertexAttribArray(0);
 
     // load the texture for gpu params
-    unsigned int texture1;
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     // loading from file
-
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load("C:\\Users\\Pigeon_Borb\\Desktop\\learn\\game dev and physics\\cbased\\openglC\\src\\container2.png", &width, &height, &nrChannels, 0);
-
-    if (data) {
-        // file open success
-        // check the color channel format
-        // default
-        GLenum format = GL_RGB;
-        if (nrChannels == 1) {
-            format = GL_RED;
-        }
-        else if (nrChannels == 3) {
-            format = GL_RGB;
-        }
-        else if (nrChannels == 4) {
-            format = GL_RGBA;
-        }
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else {
-        printf("Failed to load texture\n");
-    }
-    stbi_image_free(data);
-
+    unsigned int texture1 = loadTexture("C:\\Users\\Pigeon_Borb\\Desktop\\learn\\game dev and physics\\cbased\\openglC\\src\\container2.png");
+    unsigned int texture2 = loadTexture("C:\\Users\\Pigeon_Borb\\Desktop\\learn\\game dev and physics\\cbased\\openglC\\src\\container2_specular.png");
 
     // shader config
     useShader(shaderProgram);
     setInt(shaderProgram, "material.diffuse", 0);
-
-
+    setInt(shaderProgram, "material.specular", 1);
 
 
     // use this to see the polygon shape of the rendered triangles
@@ -350,45 +356,19 @@ int main(int argc, char* argv[]) {
 
         useShader(shaderProgram);
         // define color dynamic color params;
-        vec3 lightColor;
-        glm_vec3_zero(lightColor);
-        lightColor[0] = sin(timeValue * 2.0f);
-        lightColor[1] = sin(timeValue * 0.7f);
-        lightColor[2] = sin(timeValue * 1.3f);
 
-        vec3 diffuseColorParam;
-        glm_vec3_one(diffuseColorParam);
-        glm_vec3_scale(diffuseColorParam, 0.5f, diffuseColorParam);
-
-        vec3 ambientColorParam;
-        glm_vec3_one(ambientColorParam);
-        glm_vec3_scale(ambientColorParam, 0.2f, ambientColorParam);
-
-        vec3 diffuseColor;
-        glm_vec3_mul(lightColor, diffuseColorParam, diffuseColor);
-
-        vec3 ambientColor;
-        glm_vec3_mul(diffuseColor, ambientColorParam, ambientColor);
-
-        setVec3(shaderProgram, "objectColor", 1.0f, 0.5f, 0.31f);
-        setVec3(shaderProgram, "lightColor", lightColor[0], lightColor[1], lightColor[2]);
         setVec3(shaderProgram, "light.position", lightPos[0], lightPos[1], lightPos[2]);
         // usually this calc is done in view space as opposed to world space because 
         // the calc is simpler because the viewer position is always at (0,0,0)
         setVec3(shaderProgram, "viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
         // light setup
-        setVec3(shaderProgram, "light.ambient", ambientColor[0], ambientColor[1], ambientColor[2]);
-        setVec3(shaderProgram, "light.diffuse", diffuseColor[0], diffuseColor[1], diffuseColor[2]);
+        setVec3(shaderProgram, "light.ambient", 0.2f, 0.2f, 0.2f);
+        setVec3(shaderProgram, "light.diffuse", 0.5f, 0.5f, 0.5f);
         setVec3(shaderProgram, "light.specular", 1.0f, 1.0f, 1.0f);
         // set material
         setVec3(shaderProgram, "material.ambient", 1.0f, 0.5f, 0.31f);
-        setVec3(shaderProgram, "material.specular", 0.5f, 0.5f, 0.5f);
         setFloat(shaderProgram, "material.shininess", 64.0f);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-
-        
 
         // projection stuff
         mat4 projection;
@@ -434,6 +414,14 @@ int main(int argc, char* argv[]) {
         rotVec2[1] = 0.3f;
         rotVec2[2] = 0.0f;
         glm_rotate(model, timeValue, rotVec2);*/
+
+        // activate textures
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
         setMat4(shaderProgram, "model", model);
         glBindVertexArray(VAO);
         

@@ -4,11 +4,11 @@ out vec4 FragColor;
 // the point is to show that different objects have different reactions to light
 // some reflect more, others scatter. We can simulate different types of objects.
 struct Material {
-	vec3 ambient;
+	// vec3 ambient;
 	// sampler2D - is opaque type which means we can't instantiate these types but only
 	// define in uniforms
 	sampler2D diffuse;
-	vec3 specular;
+	sampler2D specular;
 	float shininess;
 };
 
@@ -45,7 +45,7 @@ uniform vec3 viewPos;
 // The Phong shading gave much smoother results.
 
 void main() {
-	vec3 ambient = material.ambient * light.ambient * vec3(texture(material.diffuse, TexCoords));
+	vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
 	// diffusion light
 	// Need normalized vectors that keep direction to calc
 	vec3 norm = normalize(Normal);
@@ -60,7 +60,7 @@ void main() {
 	vec3 reflectDir = reflect(-lightDir, norm);
 	// 32 is the shininess value of the highlight
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-	vec3 specular = light.specular * (spec * material.specular);
+	vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
 
 	vec3 result = ambient + diffuse + specular;
 	FragColor = vec4(result, 1.0);
