@@ -9,6 +9,7 @@ struct Material {
 	// define in uniforms
 	sampler2D diffuse;
 	sampler2D specular;
+	sampler2D emissionMap;
 	float shininess;
 };
 
@@ -21,6 +22,7 @@ struct Light {
 };
 uniform Material material;
 uniform Light light;
+uniform float time;
 
 // normal for light reflection off surface perpindicular - light diffusion
 in vec3 Normal;
@@ -62,7 +64,16 @@ void main() {
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	vec3 specular = light.specular * spec * (vec3(1.0) - vec3(texture(material.specular, TexCoords)));
 
-	vec3 result = ambient + diffuse + specular;
+	vec3 emission = vec3(texture(material.emissionMap, TexCoords));
+	// fading masking effect as if you are going through an object
+	emission = emission * (sin(time) * 0.5f + 0.5f) * 2.0;
+	// classic shine on the text object that is framed inside the metal frame
+	// vec3 emissionMask = step(vec3(1.0f), vec3(1.0f)-vec3(texture(material.specular, TexCoords)));
+	// cool inverted revealing light system
+	vec3 emissionMask = step(vec3(1.0f), vec3(1.0f)-specular);
+	emission = emission * emissionMask;
+
+	vec3 result = ambient + diffuse + specular + emission;
 	FragColor = vec4(result, 1.0);
 }
 

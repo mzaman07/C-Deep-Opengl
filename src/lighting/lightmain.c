@@ -330,11 +330,13 @@ int main(int argc, char* argv[]) {
     // loading from file
     unsigned int texture1 = loadTexture("C:\\Users\\Pigeon_Borb\\Desktop\\learn\\game dev and physics\\cbased\\openglC\\src\\container2.png");
     unsigned int texture2 = loadTexture("C:\\Users\\Pigeon_Borb\\Desktop\\learn\\game dev and physics\\cbased\\openglC\\src\\container2_specular.png");
+    unsigned int texture3 = loadTexture("C:\\Users\\Pigeon_Borb\\Desktop\\learn\\game dev and physics\\cbased\\openglC\\src\\matrix.jpg");
 
     // shader config
     useShader(shaderProgram);
     setInt(shaderProgram, "material.diffuse", 0);
     setInt(shaderProgram, "material.specular", 1);
+    setInt(shaderProgram, "material.emissionMap", 2);
 
 
     // use this to see the polygon shape of the rendered triangles
@@ -345,6 +347,7 @@ int main(int argc, char* argv[]) {
         float timeValue = glfwGetTime();
         deltaTime = timeValue - lastFrame;
         lastFrame = timeValue;
+        setFloat(shaderProgram, "time", timeValue);
 
         // Keep running until user closes window
         // input handle method for now
@@ -426,6 +429,9 @@ int main(int argc, char* argv[]) {
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, texture3);
 
         setMat4(shaderProgram, "model", model);
         glBindVertexArray(VAO);
