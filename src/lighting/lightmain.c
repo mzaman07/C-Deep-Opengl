@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
     cameraUp[1] = 1.0f;
     glm_vec3_zero(lightPos);
     lightPos[0] = 1.2f;
-    lightPos[1] = 1.0f;
+    lightPos[1] = 0.0f;
     lightPos[2] = 2.0f;
     printf("lightPos x:%f, y:%f, z:%f \n", lightPos[0], lightPos[1], lightPos[2]);
     // how glfw will handle errors via a provided callback
@@ -362,6 +362,11 @@ int main(int argc, char* argv[]) {
         // the calc is simpler because the viewer position is always at (0,0,0)
         setVec3(shaderProgram, "viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
         // light setup
+        // tweaking with the settings
+        // ambient - defines distant light like stars and the moons so objects 
+        // are never completely dark
+        // diffuse - directional impacts of light
+        // specular - shininess or bright spots
         setVec3(shaderProgram, "light.ambient", 0.2f, 0.2f, 0.2f);
         setVec3(shaderProgram, "light.diffuse", 0.5f, 0.5f, 0.5f);
         setVec3(shaderProgram, "light.specular", 1.0f, 1.0f, 1.0f);
