@@ -15,7 +15,13 @@ struct Material {
 
 // do the same thing for light
 struct Light {
-	vec3 position;
+	// position is used for single source of light
+	// vec3 position;
+	// infinitely far away modelled light needs direction, since all the light rays have the same direction
+	// example the sun it is not infinitely far away but we can perceive it as being infinitely far away for 
+	// out calcs
+	vec3 direction;
+
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -51,7 +57,7 @@ void main() {
 	// diffusion light
 	// Need normalized vectors that keep direction to calc
 	vec3 norm = normalize(Normal);
-	vec3 lightDir = normalize(light.position - FragPos);
+	vec3 lightDir = normalize(-light.direction);
 
 
 	float diff = max(dot(norm, lightDir), 0.0);

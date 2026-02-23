@@ -292,6 +292,48 @@ int main(int argc, char* argv[]) {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
     };
 
+    // different cube positions 
+    vec3 cubePosition[10];
+    glm_vec3_zero(cubePosition[0]);
+    cubePosition[0][0] = 0.0f;
+    cubePosition[0][1] = 0.0f;
+    cubePosition[0][2] = 0.0f;
+    glm_vec3_zero(cubePosition[1]);
+    cubePosition[1][0] = 2.0f;
+    cubePosition[1][1] = 5.0f;
+    cubePosition[1][2] = -15.0f;
+    glm_vec3_zero(cubePosition[2]);
+    cubePosition[2][0] = -1.5f;
+    cubePosition[2][1] = -2.2f;
+    cubePosition[2][2] = -2.5f;
+    glm_vec3_zero(cubePosition[3]);
+    cubePosition[3][0] = -3.8f;
+    cubePosition[3][1] = -2.0f;
+    cubePosition[3][2] = -12.3f;
+    glm_vec3_zero(cubePosition[4]);
+    cubePosition[4][0] = 2.4f;
+    cubePosition[4][1] = -0.4f;
+    cubePosition[4][2] = -3.5f;
+    glm_vec3_zero(cubePosition[5]);
+    cubePosition[5][0] = -1.7f;
+    cubePosition[5][1] = 3.0f;
+    cubePosition[5][2] = -7.5f;
+    glm_vec3_zero(cubePosition[6]);
+    cubePosition[6][0] = 1.3f;
+    cubePosition[6][1] = -2.0f;
+    cubePosition[6][2] = -2.5f;
+    glm_vec3_zero(cubePosition[7]);
+    cubePosition[7][0] = 1.5f;
+    cubePosition[7][1] = 2.0f;
+    cubePosition[7][2] = -2.5f;
+    glm_vec3_zero(cubePosition[8]);
+    cubePosition[8][0] = 1.5f;
+    cubePosition[8][1] = 0.2f;
+    cubePosition[8][2] = -1.5f;
+    glm_vec3_zero(cubePosition[9]);
+    cubePosition[9][0] = -1.3f;
+    cubePosition[9][1] = 1.0f;
+    cubePosition[9][2] = -1.5f;
 
     // VAO and VBO
     unsigned int VAO, VBO;
@@ -360,7 +402,7 @@ int main(int argc, char* argv[]) {
         useShader(shaderProgram);
         // define color dynamic color params;
 
-        setVec3(shaderProgram, "light.position", lightPos[0], lightPos[1], lightPos[2]);
+        setVec3(shaderProgram, "light.direction", -0.2f, -1.0f, -0.3f);
         // usually this calc is done in view space as opposed to world space because 
         // the calc is simpler because the viewer position is always at (0,0,0)
         setVec3(shaderProgram, "viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
@@ -402,6 +444,8 @@ int main(int argc, char* argv[]) {
 
 
 
+
+
         /* unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
             glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans);*/
             //setMat4(shaderProgram, "model", model);
@@ -435,29 +479,48 @@ int main(int argc, char* argv[]) {
 
         setMat4(shaderProgram, "model", model);
         glBindVertexArray(VAO);
-        
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (unsigned int i = 0; i < 10; i++) {
+            mat4 model;
+            glm_mat4_identity(model);
+            glm_translate(model, cubePosition[i]);
+            vec3 rotVec2;
+            glm_vec3_zero(rotVec2);
+            rotVec2[0] = 1.0f;
+            rotVec2[1] = 0.3f;
+            rotVec2[2] = 0.5f;
+            float angle = 20.0f * i;
+            if (i == 0) {
+                glm_rotate(model, timeValue, rotVec2);
+            }
+            else {
+                glm_rotate(model, angle, rotVec2);
+            }
+            setMat4(shaderProgram, "model", model);
+            
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
         //}
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // world transform
-        useShader(lightProgram);
-        // update light positions
-        lightPos[0] = 2.0f * sin(timeValue);
-        lightPos[2] = 1.5f * cos(timeValue);
-        setMat4(lightProgram, "projection", projection);
-        setMat4(lightProgram, "view", view);
-        glm_mat4_identity(model);
-        glm_translate(model, lightPos);
-        // shrink cube by every side
-        vec3 shrinkScale;
-        glm_vec3_zero(shrinkScale);
-        shrinkScale[0] = 0.2f;
-        shrinkScale[1] = 0.2f;
-        shrinkScale[2] = 0.2f;
-        glm_scale(model, shrinkScale);
-        setMat4(lightProgram, "model", model);
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        //useShader(lightProgram);
+        //// update light positions
+        //lightPos[0] = 2.0f * sin(timeValue);
+        //lightPos[2] = 1.5f * cos(timeValue);
+        //setMat4(lightProgram, "projection", projection);
+        //setMat4(lightProgram, "view", view);
+        //glm_mat4_identity(model);
+        //glm_translate(model, lightPos);
+        //// shrink cube by every side
+        //vec3 shrinkScale;
+        //glm_vec3_zero(shrinkScale);
+        //shrinkScale[0] = 0.2f;
+        //shrinkScale[1] = 0.2f;
+        //shrinkScale[2] = 0.2f;
+        //glm_scale(model, shrinkScale);
+        //setMat4(lightProgram, "model", model);
+        //glBindVertexArray(lightVAO);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
 
