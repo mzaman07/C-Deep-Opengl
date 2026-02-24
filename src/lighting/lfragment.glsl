@@ -79,7 +79,7 @@ void main() {
 	vec3 emissionMask = step(vec3(1.0f), vec3(1.0f)-specular);
 	emission = emission * emissionMask;
 
-	vec3 result = ambient + diffuse + specular + emission;
+	vec3 result = ambient + diffuse + specular;
 	FragColor = vec4(result, 1.0);
 }
 

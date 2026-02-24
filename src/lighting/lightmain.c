@@ -417,7 +417,7 @@ int main(int argc, char* argv[]) {
         setVec3(shaderProgram, "light.specular", 1.0f, 1.0f, 1.0f);
         // set material
         setVec3(shaderProgram, "material.ambient", 1.0f, 0.5f, 0.31f);
-        setFloat(shaderProgram, "material.shininess", 64.0f);
+        setFloat(shaderProgram, "material.shininess", 32.0f);
 
 
         // projection stuff
