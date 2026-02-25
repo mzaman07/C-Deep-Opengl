@@ -395,7 +395,7 @@ int main(int argc, char* argv[]) {
         // input handle method for now
         processInput(window);
         /* Render here */
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -407,7 +407,7 @@ int main(int argc, char* argv[]) {
         // So we have to calculate the inverse cosine of the dot product which 
         // is computationally expensive operation whether its done in the shader or not.
         // So precalc the cosine and pass it to the shader.
-        setFloat(shaderProgram, "light.cutoff", cosf(glm_rad(12.5f)));
+        setFloat(shaderProgram, "light.cutOff", cosf(glm_rad(12.5f)));
         // usually this calc is done in view space as opposed to world space because 
         // the calc is simpler because the viewer position is always at (0,0,0)
         setVec3(shaderProgram, "viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
