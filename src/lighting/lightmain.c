@@ -408,6 +408,7 @@ int main(int argc, char* argv[]) {
         // is computationally expensive operation whether its done in the shader or not.
         // So precalc the cosine and pass it to the shader.
         setFloat(shaderProgram, "light.cutOff", cosf(glm_rad(12.5f)));
+        setFloat(shaderProgram, "light.outerCutOff", cosf(glm_rad(17.5f)));
         // usually this calc is done in view space as opposed to world space because 
         // the calc is simpler because the viewer position is always at (0,0,0)
         setVec3(shaderProgram, "viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
@@ -500,12 +501,12 @@ int main(int argc, char* argv[]) {
             rotVec2[1] = 0.3f;
             rotVec2[2] = 0.5f;
             float angle = 20.0f * i;
-            /*if (i == 0) {
+            if (i == 0) {
                 glm_rotate(model, timeValue, rotVec2);
             }
-            else {*/
-            glm_rotate(model, angle, rotVec2);
-            //}
+            else {
+                glm_rotate(model, angle, rotVec2);
+            }
             setMat4(shaderProgram, "model", model);
             
             glDrawArrays(GL_TRIANGLES, 0, 36);
