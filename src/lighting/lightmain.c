@@ -395,14 +395,19 @@ int main(int argc, char* argv[]) {
         // input handle method for now
         processInput(window);
         /* Render here */
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
         useShader(shaderProgram);
         // define color dynamic color params;
-        setVec3(shaderProgram, "light.position", lightPos[0], lightPos[1], lightPos[2]);
-        //setVec3(shaderProgram, "light.direction", -0.2f, -1.0f, -0.3f);
+        setVec3(shaderProgram, "light.position", cameraPos[0], cameraPos[1], cameraPos[2]);
+        setVec3(shaderProgram, "light.direction", cameraFront[0], cameraFront[1], cameraFront[2]);
+        // we can't directly compare an angle with a cosine value.
+        // So we have to calculate the inverse cosine of the dot product which 
+        // is computationally expensive operation whether its done in the shader or not.
+        // So precalc the cosine and pass it to the shader.
+        setFloat(shaderProgram, "light.cutoff", cosf(glm_rad(12.5f)));
         // usually this calc is done in view space as opposed to world space because 
         // the calc is simpler because the viewer position is always at (0,0,0)
         setVec3(shaderProgram, "viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
@@ -412,14 +417,14 @@ int main(int argc, char* argv[]) {
         // are never completely dark
         // diffuse - directional impacts of light
         // specular - shininess or bright spots
-        setVec3(shaderProgram, "light.ambient", 0.2f, 0.2f, 0.2f);
-        setVec3(shaderProgram, "light.diffuse", 0.5f, 0.5f, 0.5f);
+        setVec3(shaderProgram, "light.ambient", 0.1f, 0.1f, 0.1f);
+        setVec3(shaderProgram, "light.diffuse", 0.8f, 0.8f, 0.8f);
         setVec3(shaderProgram, "light.specular", 1.0f, 1.0f, 1.0f);
 
         // light attenuation - fading over distance
         setFloat(shaderProgram, "light.constant", 1.0f);
         setFloat(shaderProgram, "light.linear", 0.09f);
-        setFloat(shaderProgram, "light.quadratic", 0.0032f);
+        setFloat(shaderProgram, "light.quadratic", 0.032f);
 
         // set material
         setVec3(shaderProgram, "material.ambient", 1.0f, 0.5f, 0.31f);
@@ -495,12 +500,12 @@ int main(int argc, char* argv[]) {
             rotVec2[1] = 0.3f;
             rotVec2[2] = 0.5f;
             float angle = 20.0f * i;
-            if (i == 0) {
+            /*if (i == 0) {
                 glm_rotate(model, timeValue, rotVec2);
             }
-            else {
-                glm_rotate(model, angle, rotVec2);
-            }
+            else {*/
+            glm_rotate(model, angle, rotVec2);
+            //}
             setMat4(shaderProgram, "model", model);
             
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -509,24 +514,24 @@ int main(int argc, char* argv[]) {
         //}
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // world transform
-        useShader(lightProgram);
+        //useShader(lightProgram);
         // update light positions
         /*lightPos[0] = 2.0f * sin(timeValue);
         lightPos[2] = 1.5f * cos(timeValue);*/
-        setMat4(lightProgram, "projection", projection);
-        setMat4(lightProgram, "view", view);
-        glm_mat4_identity(model);
-        glm_translate(model, lightPos);
-        // shrink cube by every side
-        vec3 shrinkScale;
-        glm_vec3_zero(shrinkScale);
-        shrinkScale[0] = 0.2f;
-        shrinkScale[1] = 0.2f;
-        shrinkScale[2] = 0.2f;
-        glm_scale(model, shrinkScale);
-        setMat4(lightProgram, "model", model);
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        //setMat4(lightProgram, "projection", projection);
+        //setMat4(lightProgram, "view", view);
+        //glm_mat4_identity(model);
+        //glm_translate(model, lightPos);
+        //// shrink cube by every side
+        //vec3 shrinkScale;
+        //glm_vec3_zero(shrinkScale);
+        //shrinkScale[0] = 0.2f;
+        //shrinkScale[1] = 0.2f;
+        //shrinkScale[2] = 0.2f;
+        //glm_scale(model, shrinkScale);
+        //setMat4(lightProgram, "model", model);
+        //glBindVertexArray(lightVAO);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
 

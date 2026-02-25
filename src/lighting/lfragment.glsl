@@ -20,12 +20,16 @@ struct Light {
 	// infinitely far away modelled light needs direction, since all the light rays have the same direction
 	// example the sun it is not infinitely far away but we can perceive it as being infinitely far away for 
 	// out calcs
-	// vec3 direction;
+	// for spot lights or just shooting a light beam for a vector we need the direction
+	vec3 direction;
+	// specifies the light's radius and will be used to calculate the angle between 2 vectors
+	float cutOff;
 
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
 
+	// attenuation - fading parameters
 	float constant;
 	float linear;
 	float quadratic;
@@ -57,41 +61,52 @@ uniform vec3 viewPos;
 // The Phong shading gave much smoother results.
 
 void main() {
-	vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-	// diffusion light
-	// Need normalized vectors that keep direction to calc
-	vec3 norm = normalize(Normal);
-	vec3 lightDir = normalize(-light.position - FragPos);
-
-
-	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
-
-	// specular stuff
-	vec3 viewDir = normalize(viewPos - FragPos);
-	vec3 reflectDir = reflect(-lightDir, norm);
-	// 32 is the shininess value of the highlight
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-	vec3 specular = light.specular * spec * (vec3(1.0) - vec3(texture(material.specular, TexCoords)));
-
-	vec3 emission = vec3(texture(material.emissionMap, TexCoords));
-	// fading masking effect as if you are going through an object
-	emission = emission * (sin(time) * 0.5f + 0.5f) * 2.0;
-	// classic shine on the text object that is framed inside the metal frame
-	// vec3 emissionMask = step(vec3(1.0f), vec3(1.0f)-vec3(texture(material.specular, TexCoords)));
-	// cool inverted revealing light system
-	vec3 emissionMask = step(vec3(1.0f), vec3(1.0f)-specular);
-	emission = emission * emissionMask;
 	
-	// light attenuation - fading over distance
-	float distance = length(light.position - FragPos);
-	float attenuation = 1.0 / (light.constant + light.linear * distance + 
-						light.quadratic * (distance* distance));
-	ambient *= attenuation;
-	diffuse *= attenuation;
-	specular *= attenuation;
+	vec3 lightDir = normalize(light.position - FragPos);
+	// check if lighting is inside the spotlight cone
+	float theta = dot(lightDir, normalize(-light.direction));
+	// we are using cosine angles so the smaller so '>' is used
+	if(theta > light.cutOff) {
+		vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+		// diffusion light
+		// Need normalized vectors that keep direction to calc
+		vec3 norm = normalize(Normal);
 
-	vec3 result = ambient + diffuse + specular;
-	FragColor = vec4(result, 1.0);
+
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+
+		// specular stuff
+		vec3 viewDir = normalize(viewPos - FragPos);
+		vec3 reflectDir = reflect(-lightDir, norm);
+		// 32 is the shininess value of the highlight
+		float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+		vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+
+		// vec3 emission = vec3(texture(material.emissionMap, TexCoords));
+		// fading masking effect as if you are going through an object
+		// emission = emission * (sin(time) * 0.5f + 0.5f) * 2.0;
+		// classic shine on the text object that is framed inside the metal frame
+		// vec3 emissionMask = step(vec3(1.0f), vec3(1.0f)-vec3(texture(material.specular, TexCoords)));
+		// cool inverted revealing light system
+		// vec3 emissionMask = step(vec3(1.0f), vec3(1.0f)-specular);
+		// emission = emission * emissionMask;
+	
+		// light attenuation - fading over distance
+		float distance = length(light.position - FragPos);
+		float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+		// ambient *= attenuation;
+		diffuse *= attenuation;
+		specular *= attenuation;
+
+		vec3 result = ambient + diffuse + specular;
+		FragColor = vec4(result, 1.0);
+	}
+	else {
+		// make sure the scene isnt completely in the dark outside of the spotlight
+		FragColor = vec4(light.ambient * vec3(texture(material.diffuse, TexCoords)), 1.0);
+	}
+
+	
 }
 
